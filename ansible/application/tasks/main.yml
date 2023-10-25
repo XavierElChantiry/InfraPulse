@@ -17,7 +17,7 @@
 
 - name: Unarchive and download the project
   unarchive:
-    src: https://github.com/XavierElChantiry/Basic-Webapp/archive/refs/heads/master.zip
+    src: https://github.com/XavierElChantiry/Basic-Webapp/archive/refs/heads/main.zip
     dest: /usr/local/bin
     remote_src: yes
     owner: ubuntu
