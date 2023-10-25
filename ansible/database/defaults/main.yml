@@ -1,0 +1,8 @@
+---
+# defaults file for database
+db_username: example
+db_password: verysecure
+db_name: backend
+rds_admin: admin
+rds_admin_pw: password
+rds_db_name: database-1

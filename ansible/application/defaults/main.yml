@@ -1,0 +1,7 @@
+---
+# defaults file for application
+db_username: example
+db_password: verysecure
+db_name: backend
+student_name: 74108520963
+student_id: xav

@@ -1,0 +1,105 @@
+- name: install dependacies
+  apt:
+    pkg:
+    - nginx
+    - unzip
+    - python3-pip
+    - libmysqlclient-dev
+    - acl
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install mysqlclient for the root user
+  pip: 
+    name: pymysql 
+  become: true
+
+- name: Unarchive and download the project
+  unarchive:
+    src: https://github.com/timoguic/acit4640-py-mysql/archive/refs/heads/master.zip
+    dest: /usr/local/bin
+    remote_src: yes
+    owner: ubuntu
+  become: yes
+  register: unarchived
+
+- name: Create a /frontend directory if it does not exist
+  file:
+    path: /frontend
+    state: directory
+    owner: ubuntu
+  become: yes
+
+- name: Add the user backend to the machine with the home directory /backend
+  user:
+    name: backend
+    createhome: yes
+    home: /backend
+  become: yes
+
+- name: Copy frontend folder with owner 
+  copy:
+    src: /usr/local/bin/acit4640-py-mysql-master/frontend/index.html
+    dest: /frontend
+    owner: ubuntu
+    remote_src: yes
+
+- name: Copy folders folder with owners 
+  copy:
+    src: "{{ item.src}}"
+    dest: "{{ item.dest}}"
+    owner: "{{ item.owner}}"
+    remote_src: "{{ item.remote_src}}"
+  loop:
+    - src: /usr/local/bin/acit4640-py-mysql-master/backend/
+      dest: /backend/src
+      owner: backend
+      remote_src: yes
+    - src: files/backend.service
+      dest: /etc/systemd/system
+      owner: root
+      remote_src: no
+  become: yes
+  when: unarchived.changed
+
+- name: template nginx file
+  template: 
+    src: templates/nginx-default.j2
+    dest: /etc/nginx/sites-available/default
+  become: yes
+  register: conf_change
+
+- name: template backend.conf file
+  template: 
+    src: backend.conf.j2
+    dest: /backend/src/backend.conf
+  become: yes
+  register: backend_conf_change
+
+- name: Install python requirements as backend
+  pip:
+    requirements: /backend/src/requirements.txt
+  become: true
+  become_user: backend
+
+- name: Just force systemd to reread configs 
+  systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable service backend
+  service:
+    name: backend
+    enabled: yes
+    state: restarted
+  become: true
+  when: backend_conf_change.changed
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+  when: conf_change.changed
+

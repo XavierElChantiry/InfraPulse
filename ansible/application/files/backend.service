@@ -1,0 +1,13 @@
+[Unit]
+Description=Example Python backend for acit4640
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/backend/src
+User=backend
+ExecStart=/backend/.local/bin/gunicorn wsgi:app -b 0.0.0.0:5000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

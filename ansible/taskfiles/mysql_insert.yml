@@ -1,0 +1,24 @@
+---
+- mysql_query:
+    login_host : "{{ db_host }}"
+    login_user: "{{ db_username }}"
+    login_password: '{{ db_password }}'
+    login_db: "{{ db_name }}"
+    query: SELECT * FROM item WHERE bcit_id = %s
+    positional_args:
+      - "{{ student_id }}"
+  register: mysql_select
+
+- debug:
+    msg: "{{mysql_select}}"
+- name: run insert query into db
+  mysql_query:
+    login_host : "{{ db_host }}"
+    login_db : "{{ db_name }}"
+    login_password: '{{ db_password }}'
+    login_user: "{{ db_username }}"
+    query: INSERT INTO item (name, bcit_id) VALUES (%(student_name)s, %(student_id)s)
+    named_args:
+      student_name: "{{ student_name }}"
+      student_id: "{{ student_id }}"
+  when: mysql_select.rowcount[0] == 0
