@@ -1,0 +1,109 @@
+---
+# tasks file for database
+- name: install dependacies
+  apt:
+    pkg:
+    - python3-pip
+    - mysql-server
+    - libmysqlclient-dev
+    - acl
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Install mysqlclient for the root user
+  pip: 
+    name: mysqlclient 
+  become: true
+  when: setup_local_db
+
+- name: ensure mysql is configured to bind to the specified address and port
+  ini_file:
+    dest: /etc/mysql/my.cnf
+    section: mysqld
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  register: my_cnf
+  with_items:
+    - { option: bind-address, value: "0.0.0.0" }
+  become: true
+
+- name: restart mysql if necessary
+  service:
+    name: mysql
+    state: restarted
+  become: true
+  when: my_cnf.changed
+  register: mysql_restart
+
+- name: Start service mysql, if not started
+  service:
+    name: mysql
+    state: started
+  become: true
+  when:  mysql_restart is succeeded and mysql_restart is not changed
+
+
+- name: Create a new database with name '{{ db_name }}'
+  mysql_db:
+    name: '{{ db_name }}'
+    state: present
+  become: true
+  when: setup_local_db
+
+- name: create "{{ db_username }}"
+  mysql_user:
+    name: "{{ db_username }}"
+    password: '{{ db_password }}'
+    priv: '{{ db_name }}.*:ALL'
+    host: "%"
+    state: present
+  become: true
+  when: setup_local_db
+
+
+# - name: Install mysqlclient for the root user
+#   pip: 
+#     name: '{{item}}' 
+#   become: true
+#   loop:
+#     - 'mysqlclient'
+#     - 'boto3'
+#     - 'botocore'
+#   when: not setup_local_db
+
+# - name: get rds info
+#   rds_instance_info: 
+#     region: 'us-west-2'
+#     aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+#     aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+#     db_instance_identifier: "{{ rds_db_name }}"
+#   register: aws_rds_info
+#   when: not setup_local_db
+
+# - debug:
+#     msg: "{{ aws_rds_info }}"
+#   when: not setup_local_db
+
+# - name: Create a new database with name '{{ db_name }}'
+#   mysql_db:
+#     login_host : '{{ aws_rds_info.instances[0].endpoint.address }}'
+#     login_user: "{{ rds_admin }}"
+#     login_password: '{{ rds_admin_pw }}'
+#     name: '{{ db_name }}'
+#     state: present
+#   become: true
+#   when: not setup_local_db
+
+# - name: create "{{ db_username }}"
+#   mysql_user:
+#     login_host : '{{ aws_rds_info.instances[0].endpoint.address }}'
+#     login_user: "{{ rds_admin }}"
+#     login_password: '{{ rds_admin_pw }}'
+#     name: "{{ db_username }}"
+#     password: '{{ db_password }}'
+#     host: "%"
+#     priv: '{{ db_name }}.*:ALL,GRANT'
+#     state: present
+#   become: true
+#   when: not setup_local_db

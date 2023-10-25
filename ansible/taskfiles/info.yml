@@ -1,0 +1,14 @@
+---
+- name: Creating  variable
+  set_fact:
+    worked_question_mark: "{{ lookup('url', 'http://{{ public_dns_name }}', wantlist=True) }}"
+  register: worked_question_mark
+  ignore_errors: True
+
+- name: application is running
+  fail:
+    msg: "Application is not runnning, please provision it. Use command: 'ansible-playbook' command on 'week6.yml' with or without tag provision"
+  when: worked_question_mark.failed
+
+- name: url lookup splits lines by default
+  debug: msg="application is running on http://{{ public_dns_name }}"

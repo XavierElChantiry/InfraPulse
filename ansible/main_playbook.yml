@@ -1,0 +1,42 @@
+---
+- hosts: Service_DB
+  tasks:
+    - name: import mysql query tasks
+      import_tasks: taskfiles/info.yml
+      tags: [ "info", "never" ]
+
+    - name: set fact
+      set_fact: 
+        db_host: "{{ private_ip_address }}"
+        db_name: backenffd
+        db_username: badfefnd
+        db_password: verysecfuasfre
+        setup_local_db: True 
+      register: setup_true
+
+    - import_role:
+        name: database
+      tags: provision
+
+- hosts: Service_APP
+  tasks:
+
+    - name: set fact
+      set_fact: 
+        db_host: "{{ hostvars[groups['Service_DB'][0]]['db_host'] }}"
+        db_name: "{{ hostvars[groups['Service_DB'][0]]['db_name'] }}"
+        db_username: "{{ hostvars[groups['Service_DB'][0]]['db_username'] }}"
+        db_password: "{{ hostvars[groups['Service_DB'][0]]['db_password'] }}"
+
+        setup_local_db: True 
+      register: setup_true
+
+    - import_role:
+        name: application
+      tags: provision
+    - name: import mysql query tasks
+      import_tasks: taskfiles/mysql_insert.yml
+      tags: provision
+  vars:
+    student_name: xfhfyevedgv
+    student_id: A010297567
