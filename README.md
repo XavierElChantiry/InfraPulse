@@ -14,3 +14,5 @@ explaining web app
 explaining setup
 step to install pre recs
 fixing rds setup/troubleshooting
+
+Mention how the app is setup so someone could reuse the db setup and the app sertup also mention the LB
