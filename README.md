@@ -8,6 +8,7 @@ terraform needs to be logged into their aws
 
 ansible needs to have the key for their aws
 
+okay intro, setup, use, troubleshooting, 
 
 some key seconds should be
 explaining web app
