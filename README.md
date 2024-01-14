@@ -1,7 +1,13 @@
 # InfraPulse
 
-This is a terraform and ansiblle to configure and host a simple webapp i made for demonstration
+## Introduction
+Aside from an attempt at a catchy name, this project has the ansible and terraform needed to set up a simple web application. In this case its a web application that servies the contents of a RDS or local database.
 
+## Getting started 
+### Prerequisites
+### Start Project
+
+## Troubleshooting
 mostly notes for my self,
 they need working ansible and terraform
 terraform needs to be logged into their aws
